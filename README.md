@@ -10,6 +10,15 @@ Node .js instalado na máquina V20 ou superior
 - Atendimento Automático  
 - Redirecionamento para Atendimento Humano  
 - Suporte a Múltiplos Idiomas  
+```bash
+const qrcode = require('qrcode-terminal');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const client = new Client({ authStrategy: new LocalAuth() });
+```
+Três principais funções do código:    
+- O código utiliza o módulo 'qrcode-terminal' para gerar e exibir códigos QR no terminal
+- O código utiliza o módulo 'whatsapp-web.js' para criar uma instância do cliente, 
+- Criado uma nova instância do Client e passado um objeto de configuração que especifica a estratégia de autenticação a ser usada.
 ## Estrutura do Projeto 
     /src
       /controllers      # Controladores para gerenciar a lógica do chatbot
