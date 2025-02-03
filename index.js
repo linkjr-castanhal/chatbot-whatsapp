@@ -1,5 +1,5 @@
 const express = require('express');
-const qrcode = require('qrcode-terminal');
+const qrcode = require('qrcode');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const { processarSaudacao } = require('./src/funcao_processar_saudacao');
 const { tratarOpcoes } = require('./src/funcao_tratar_opcoes.js');
@@ -8,7 +8,10 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const client = new Client({
-    authStrategy: new LocalAuth()
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Configurações necessárias para o Heroku
+    }
 });
 
 const menuEnviado = {};
@@ -16,13 +19,21 @@ const aguardandoSugestao = {};
 const tempoConversa = {}; // Armazena o tempo de início da conversa
 const LIMITE_TEMPO_CONVERSA = 30 * 60 * 1000; // 30 minutos em milissegundos
 
+let qrCodeUrl = ''; // Variável para armazenar a URL do QR Code
+
 client.on('ready', () => {
     console.log('Conectado com sucesso!');
 });
 
 client.on('qr', qr => {
-    qrcode.generate(qr, { small: true });
-    console.log('QR Code gerado, verifique os logs do Heroku.');
+    qrcode.toDataURL(qr, (err, url) => {
+        if (err) {
+            console.error('Erro ao gerar QR Code:', err);
+        } else {
+            qrCodeUrl = url; // Armazena a URL do QR Code
+            console.log('QR Code gerado:', url);
+        }
+    });
 });
 
 const greetings = ["oi", "olá", "hello", "hi", "bom dia", "boa tarde", "boa noite", "salve", "aoba"];
@@ -105,8 +116,13 @@ client.on('message', async (message) => {
 
 client.initialize();
 
+// Rota para exibir o QR Code
 app.get('/', (req, res) => {
-    res.send('Servidor rodando...');
+    if (qrCodeUrl) {
+        res.send(`<img src="${qrCodeUrl}" alt="QR Code" />`);
+    } else {
+        res.send('Aguardando QR Code...');
+    }
 });
 
 app.listen(port, () => {
