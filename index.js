@@ -1,7 +1,11 @@
+const express = require('express');
 const qrcode = require('qrcode-terminal');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const { processarSaudacao } = require('./src/funcao_processar_saudacao');
 const { tratarOpcoes } = require('./src/funcao_tratar_opcoes.js');
+
+const app = express();
+const port = process.env.PORT || 3000;
 
 const client = new Client({
     authStrategy: new LocalAuth()
@@ -18,6 +22,7 @@ client.on('ready', () => {
 
 client.on('qr', qr => {
     qrcode.generate(qr, { small: true });
+    console.log('QR Code gerado, verifique os logs do Heroku.');
 });
 
 const greetings = ["oi", "olá", "hello", "hi", "bom dia", "boa tarde", "boa noite", "salve", "aoba"];
@@ -99,3 +104,11 @@ client.on('message', async (message) => {
 });
 
 client.initialize();
+
+app.get('/', (req, res) => {
+    res.send('Servidor rodando...');
+});
+
+app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`);
+});
